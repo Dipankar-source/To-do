@@ -123,9 +123,9 @@ function setupAuthUI(user) {
         const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase();
 
         authBtn.innerHTML = `
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Sign Out</span>
-                `;
+            <i style="color: #fff;" class="fas fa-sign-out-alt"></i>
+            <span style="color: #fff;">Sign Out</span>
+        `;
 
         // Add user info
         const userInfo = document.createElement('div');
