@@ -1,4 +1,93 @@
 
+// Add Shery.js CDN dynamically if not present
+(function addSheryCDN() {
+    if (!document.getElementById('sheryjs-cdn')) {
+        const script = document.createElement('script');
+        script.id = 'sheryjs-cdn';
+        script.src = 'https://unpkg.com/sheryjs@latest/dist/Shery.js';
+        script.onload = initMouseFollower;
+        document.head.appendChild(script);
+    } else {
+        initMouseFollower();
+    }
+})();
+
+function initMouseFollower() {
+    if (!window.Shery) return;
+
+    // Remove existing follower if any
+    document.querySelector('.shery-mouse-follower')?.remove();
+
+    // Create follower element
+    const follower = document.createElement('div');
+    follower.className = 'shery-mouse-follower';
+    follower.style.cssText = `
+        position: fixed;
+        top: 0; left: 0;
+        width: 17px; height: 17px;
+        border-radius: 50%;
+        background: rgba(67,97,238,0.15);
+        border: 2px solid #4361ee;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: background 0.2s, border 0.2s;
+        box-shadow: 0 2px 8px rgba(67,97,238,0.08);
+        backdrop-filter: blur(2px);
+    `;
+    document.body.appendChild(follower);
+
+    // Use Shery.js for smooth mouse tracking
+    let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let pos = { x: mouse.x, y: mouse.y };
+
+    window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    function animate() {
+        // Smooth follow
+        pos.x += (mouse.x - pos.x) * 0.18;
+        pos.y += (mouse.y - pos.y) * 0.18;
+        follower.style.left = pos.x + 'px';
+        follower.style.top = pos.y + 'px';
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Optional: Change style on clickable elements
+    document.querySelectorAll('button, a, .btn, .task-item').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            follower.style.background = 'rgba(247,37,133,0.15)';
+            follower.style.borderColor = '#f72585';
+        });
+        el.addEventListener('mouseleave', () => {
+            follower.style.background = 'rgba(67,97,238,0.15)';
+            follower.style.borderColor = '#4361ee';
+        });
+    });
+
+    // Magnet effect on specified icons
+    const magnetSelectors = [
+        '.fas.fa-plus',
+        
+    ];
+    document.querySelectorAll(magnetSelectors.join(',')).forEach(icon => {
+        icon.style.transition = 'transform 0.18s cubic-bezier(.22,1,.36,1)';
+        icon.addEventListener('mousemove', function (e) {
+            const rect = icon.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            icon.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px) scale(1.15)`;
+        });
+        icon.addEventListener('mouseleave', function () {
+            icon.style.transform = 'translate(0,0) scale(1)';
+        });
+    });
+}
+
+
 // Firebase configuration - REPLACE WITH YOUR OWN CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyAk7EOUaBhAbPsF3t5oBItWprze6IZH_OY",
@@ -37,6 +126,24 @@ const highPriorityEl = document.getElementById('highPriority');
 // Task data
 let tasks = [];
 let unsubscribeTasks = null;
+
+// Disable right-click/context menu
+document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+});
+
+// Disable common developer shortcuts
+document.addEventListener('keydown', function (e) {
+    // F12
+    if (e.key === 'F12') {
+        e.preventDefault();
+    }
+    // Ctrl+Shift+I or Ctrl+Shift+J or Ctrl+U or Ctrl+C
+    if ((e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+        (e.ctrlKey && (e.key === 'U' || e.key === 'c' || e.key === 'C'))) {
+        e.preventDefault();
+    }
+});
 
 // Theme toggle functionality
 function toggleTheme() {
@@ -123,17 +230,16 @@ function setupAuthUI(user) {
         const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase();
 
         authBtn.innerHTML = `
-            <i style="color: #fff;" class="fas fa-sign-out-alt"></i>
-            <span style="color: #fff;">Sign Out</span>
+            <i class="fas fa-sign-out-alt"></i>
+            <span >Sign Out</span>
         `;
 
         // Add user info
         const userInfo = document.createElement('div');
         userInfo.className = 'user-info';
         userInfo.innerHTML = `
-                    <div class="user-avatar">${initials.substring(0, 2)}</div>   
-                `;
-
+            <div class="user-avatar magnet-avatar">${initials.substring(0, 2)}</div>   
+        `;
         // Replace or add user info
         const existingUserInfo = authContainer.querySelector('.user-info');
         if (existingUserInfo) {

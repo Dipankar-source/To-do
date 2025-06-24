@@ -1,3 +1,4 @@
+
 :root {
     /* Light Theme */
     --bg-primary: #f8f9fa;
@@ -42,6 +43,18 @@
     transition: background-color var(--transition-speed),
         color var(--transition-speed),
         border-color var(--transition-speed);
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+    scroll-padding-top: 0.5rem;
+    
+}
+
+* ::selection{
+    background: black;
+    color: white;
+    
 }
 
 body {
